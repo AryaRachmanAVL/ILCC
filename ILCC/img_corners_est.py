@@ -1,9 +1,8 @@
 import numpy as np
-print np
 import cv2
 import os
 from ast import literal_eval as make_tuple
-import config
+import ILCC.config as config
 import shutil
 import sys
 
@@ -16,17 +15,17 @@ def get_corner_coords(imagefilename, backend=params['backend'], size=make_tuple(
     if backend == "matlab":
         try:
             import matlab.engine
-            print "Matlab is used as backend for detecting corners"
+            print("Matlab is used as backend for detecting corners")
         except ImportError:
-            print "matlab.engine can not be found!"
-            print "To use detectCheckerboardPoints function of matlab in python, matlab.engine for python should be installed!"
+            print("matlab.engine can not be found!")
+            print("To use detectCheckerboardPoints function of matlab in python, matlab.engine for python should be installed!")
             sys.exit(0)
 
         eng = matlab.engine.start_matlab()
         imagePoints, boardSize, imagesUsed = eng.detectCheckerboardPoints(imagefilename, nargout=3)
-        print boardSize, imagesUsed
+        print(boardSize, imagesUsed)
         if not imagesUsed:
-            print "Corners can not be detected!"
+            print("Corners can not be detected!")
             return None
 
         np_imagePoints = np.array(imagePoints)
@@ -39,7 +38,7 @@ def get_corner_coords(imagefilename, backend=params['backend'], size=make_tuple(
                                      (imagefilename.split("/")[-1]).split(".")[
                                          0] + "_detected_corners" + "." + params['image_format']
                 cv2.imwrite(save_imagefilename, img)
-                print "Image with detected_corners is saved in " + save_imagefilename
+                print("Image with detected_corners is saved in " + save_imagefilename)
             if show_figure:
                 cv2.imshow("image with detected corners", img)
                 while True:
@@ -51,19 +50,26 @@ def get_corner_coords(imagefilename, backend=params['backend'], size=make_tuple(
         return np_imagePoints
 
     elif backend == "opencv":
-        print "OpenCV " + str(cv2.__version__) + " is used as backend for detecting corners"
+        print("OpenCV " + str(cv2.__version__) + " is used as backend for detecting corners")
         img = cv2.imread(imagefilename)
         size=(size[0]-1,size[1]-1)
-        print img.shape
+        print(img.shape)
 
-        ret, corners = cv2.findChessboardCorners(img, size,
-                                                 flags=cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE + cv2.CALIB_CB_FAST_CHECK)
+        # remove distortion
+        if 'distortion_coeffs' in params:
+            intrinsic_paras_tuple = make_tuple(params['instrinsic_para'])
+            intrinsic_paras = np.array(intrinsic_paras_tuple).reshape(3, 3)
+            distortion_coeffs = np.array(make_tuple(params['distortion_coeffs']))
+            img = cv2.undistort(img, intrinsic_paras, distortion_coeffs)
+
+        ret, corners = cv2.findChessboardCornersSB(img, size,
+                                                 flags=cv2.CALIB_CB_NORMALIZE_IMAGE + cv2.CALIB_CB_EXHAUSTIVE + cv2.CALIB_CB_ACCURACY)
         #flags=cv2.cv.CV_CALIB_CB_ADAPTIVE_THRESH + cv2.cv.CV_CALIB_CB_NORMALIZE_IMAGE + cv2.CALIB_CB_FAST_CHECK
         corners_reshaped=corners.reshape((size[1],size[0],2))
-        corners_reshaped=np.flip(corners_reshaped,1)
+        corners_reshaped=np.flip(corners_reshaped,0)
         corners=corners_reshaped.reshape((size[0]*size[1],1,2))
         if not ret:
-            print "Corners can not be detected!"
+            print("Corners can not be detected!")
             return None
 
         cv2.drawChessboardCorners(img, size, corners, ret)
@@ -95,7 +101,7 @@ def detect_img_corners():
         try:
             imagefilename = os.path.join(params['base_dir'],
                                          "img", str(i).zfill(params['file_name_digits']) + "." + params['image_format'])
-            print imagefilename
+            print(imagefilename)
             corner_points = get_corner_coords(imagefilename)
 
             # print corner_points

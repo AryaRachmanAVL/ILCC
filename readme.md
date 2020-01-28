@@ -43,63 +43,36 @@ These features are implemented for VLP-16, HDL-32e and HDL-64e. However, they te
 
 
 ## Dependencies (Tested on macOS sierra and Ubuntu 14.04/16.04)
-* Python >= 2.7.9
-* [OpenCV](http://opencv.org/) (Remember to [enable python shared library](https://github.com/pyenv/pyenv/wiki) if you are using python installed by  pyenv)
-    - for macOS:<br> 
-    ```sh
-    brew install opencv3
-    echo /usr/local/opt/opencv3/lib/python2.7/site-packages >> /usr/local/lib/python2.7/site-packages/opencv3.pth
+* Python 3.x
+* Create new Python virtual environment `python3 -m venv venv` and activate it `source venv/bin/activate`
+
+* [OpenCV](http://opencv.org/)
     ```
-    - for Ubuntu:<br> 
-    ```sh
-    git clone https://github.com/opencv/opencv.git
-    cd opencv && mkdir build && cd build && cmake .. && make -j4 && make install
+    pip install opencv-contrib-python
     ```
-* [OpenGV](https://laurentkneip.github.io/opengv/page_installation.html)
-    - for macOS and Ubuntu:<br> 
+* [OpenGV](https://github.com/laurentkneip/opengv)
     ```sh
-    git clone https://github.com/mfxox/opengv
+    git clone https://github.com/laurentkneip/opengv
     cd opengv
-    mkdir build && cd build && cmake .. && make && make install
+    mkdir build && cd build
+    cmake .. \
+    -DBUILD_PYTHON=ON \
+    -DPYBIND11_PYTHON_VERSION=3.6 \
+    -DPYTHON_INSTALL_DIR=<pathto>/venv/lib/python3.6/site-packages
+    make -j 10
+    sudo make install
     ```
 * [Point Cloud Library (PCL)](http://pointclouds.org/)
-    - for macOS:<br> 
     ```sh
-    brew install pcl
-    ```
-    - for Ubuntu:<br> 
-    ```sh
-    sudo apt-get install libpcl-1.7-all
+    sudo apt-get install libpcl-dev
     ```
     or [build from source](http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php)
-* [PCL python bindings](<https://github.com/mfxox/python-pcl>)
-    - for macOS and Ubuntu:<br> 
+* [PCL python bindings](https://github.com/strawlab/python-pcl)
+    
+    Follow instructions in the [official repository](https://github.com/strawlab/python-pcl).
+* [VTK](https://github.com/Kitware/VTK)
     ```sh
-    git clone https://github.com/mfxox/python-pcl
-    cd python-pcl
-    python setup.py install
-    ```
-* [MATLAB engine for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html): 
-    - for macOS and Linux:<br> 
-    ```sh
-    cd "matlabroot/extern/engines/python"
-    python setup.py install
-    ```
-    - MATLAB python is used for corner detection from panoramic images. The OpenCV backend is also available which can be set by the __backend__ parameter in ```config.yaml```, however, Opencv may fail to detect the corners. You can also use the example files (__output/img_corners__) of detected corners from the sample data for a try of calibration.
-<!-- * Other python packages: pip install -r [requirements.txt](requirements.txt) -->
-
-
-## Optional
-<!-- * [MATLAB engine for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html): Corner detection from images with MATLAB
-   - for macOS or Linux:<br> 
-    ```sh
-    cd "matlabroot/extern/engines/python"
-    python setup.py install
-    ``` -->
-* [VTK](https://github.com/Kitware/VTK) =7.1.1: 3D Visualization
-    - for macOS:<br> 
-    ```sh
-    brew install vtk
+    pip install vtk
     ```
 
 ## Usage
@@ -107,7 +80,7 @@ These features are implemented for VLP-16, HDL-32e and HDL-64e. However, they te
 ```sh
 git clone --recurse-submodules https://github.com/mfxox/ILCC
 cd ILCC
-python setup.py install
+pip install .
 ```
 
 
